@@ -1,0 +1,35 @@
+{
+  "dependencies": {
+    "@azure/arm-compute": "^19.1.0",
+    "@azure/identity": "^2.1.0",
+    "@discordjs/rest": "^1.1.0",
+    "discord.js": "^14.3.0",
+    "dotenv": "^16.0.2",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "minecraft-server-util": "^5.3.1",
+    "node-cron": "^3.0.2"
+  },
+  "name": "discord-bot-mc-server",
+  "description": "Simple Discord bot to manage a Minecraft server hosted on Azure vm.",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/philippegarand/discord-bot-mc-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/philippegarand/discord-bot-mc-server/issues"
+  },
+  "homepage": "https://github.com/philippegarand/discord-bot-mc-server#readme",
+  "devDependencies": {
+    "eslint": "^8.23.1",
+    "prettier": "^2.7.1"
+  }
+}
