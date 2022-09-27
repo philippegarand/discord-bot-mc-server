@@ -9,25 +9,13 @@ const {
   Commands,
   ServerStatus,
   VMPowerStateToServerStatus,
-  VMPowerState,
 } = require("../enums");
+const { getVMPowerStateToServerStatus } = require("../vm");
 require("dotenv").config();
 
-const { ComputeManagementClient } = require("@azure/arm-compute");
-const { DefaultAzureCredential } = require("@azure/identity");
 const mcServerUtil = require("minecraft-server-util");
 
-const {
-  AZURE_SUBSCRIPTION_ID,
-  AZURE_RESOURCE_GROUP,
-  AZURE_VM_NAME,
-  MC_SERVER_ADRESS,
-} = process.env;
-
-const computeClient = new ComputeManagementClient(
-  new DefaultAzureCredential(),
-  AZURE_SUBSCRIPTION_ID
-);
+const { MC_SERVER_ADRESS } = process.env;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -36,7 +24,6 @@ module.exports = {
   async execute(interaction) {
     let vmServerStatus =
       VMPowerStateToServerStatus[await getVMPowerStateToServerStatus()];
-    global.vmServerStatus = vmServerStatus;
 
     let mcServerStatus;
     let nbOfConnectedPlayers = "";
@@ -96,7 +83,7 @@ module.exports = {
       // 5 min
       if (Date.now() - global.lastServerStart > 5 * 60 * 1000) {
         message += `\nMC Server is probably crashed`;
-        message += `\nTry restarting it`;
+        message += `\nTry restarting the server`;
       } else {
         message += `\nMC Server is probably booting up`;
         message += `\nIf it isn't up in 2-3 minutes, there may be something wrong`;
@@ -123,30 +110,4 @@ module.exports = {
       global.setPressedButton(false);
     }, 10000);
   },
-};
-
-const getVMPowerStateToServerStatus = async () => {
-  var instance = await computeClient.virtualMachines.instanceView(
-    AZURE_RESOURCE_GROUP,
-    AZURE_VM_NAME
-  );
-
-  var powerState = instance.statuses.find((x) =>
-    x.code.startsWith("PowerState")
-  );
-
-  var updatingProvisioningState = instance.statuses.some(
-    (x) => x.code === "ProvisioningState/updating"
-  );
-
-  if (
-    updatingProvisioningState &&
-    powerState?.displayStatus !== VMPowerState.VMDeallocating
-  ) {
-    return global.lastButton === Buttons.Restart
-      ? VMPowerState.VMRestarting
-      : VMPowerState.VMStarting;
-  }
-
-  return powerState ? powerState.displayStatus : VMPowerState.VMUnknown;
 };

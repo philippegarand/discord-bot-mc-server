@@ -8,7 +8,8 @@ const {
 const cron = require("node-cron");
 const vm = require("./vm");
 const mcServerUtil = require("minecraft-server-util");
-const { ServerStatus } = require("./enums");
+const { ServerStatus, VMPowerStateToServerStatus } = require("./enums");
+const { getVMPowerStateToServerStatus } = require("./vm");
 require("dotenv").config();
 
 const {
@@ -17,6 +18,7 @@ const {
   MC_SERVER_NO_PLAYERS_CRON,
   MC_SERVER_NO_PLAYERS_SHUTDOWN_MSG,
   MC_SERVER_NO_PLAYERS_TIMES_FOR_SHUTDOWN,
+  DISCORD_BOT_CHANNEL_NAME,
 } = process.env;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -78,10 +80,12 @@ for (const file of handlerFiles) {
   require(`./handlers/${file}`)(client);
 }
 
-global.vmServerStatus;
 let timesNoPlayers = 0;
 cron.schedule(MC_SERVER_NO_PLAYERS_CRON, async () => {
-  if (global.vmServerStatus !== ServerStatus.Up) return;
+  const serverStatus =
+    VMPowerStateToServerStatus[await getVMPowerStateToServerStatus()];
+
+  if (serverStatus !== ServerStatus.Up) return;
 
   try {
     const mcServerStatus = await mcServerUtil.status(MC_SERVER_ADRESS, 25565, {
@@ -97,7 +101,7 @@ cron.schedule(MC_SERVER_NO_PLAYERS_CRON, async () => {
     await vm.shutdown();
     timesNoPlayers = 0;
     const channel = client.channels.cache.find(
-      (channel) => channel.name === "mc"
+      (channel) => channel.name === DISCORD_BOT_CHANNEL_NAME
     );
 
     const exampleEmbed = new EmbedBuilder()
